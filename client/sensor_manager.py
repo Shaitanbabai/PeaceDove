@@ -31,6 +31,27 @@ class Altimeter(Sensor):
         return 100  # Примерное значение высоты
 
 
+class GPSSensor(Sensor):
+    """
+    Класс для работы с GPS датчиком.
+    """
+
+    def __init__(self):
+        self.latitude = 0.0
+        self.longitude = 0.0
+
+    def read_data(self):
+        # Пример чтения данных с GPS
+        # В реальной реализации здесь будет код для взаимодействия с устройством
+        self.latitude, self.longitude = self._get_gps_data_from_device()
+        return {'latitude': self.latitude, 'longitude': self.longitude}
+
+    def _get_gps_data_from_device(self):
+        # Заглушка для получения данных с устройства
+        # В реальной реализации здесь будет код для взаимодействия с устройством
+        return 55.7558, 37.6176  # Примерные координаты (Москва)
+
+
 class SensorManager:
     """
     Класс для управления сенсорами.
@@ -60,7 +81,7 @@ class SensorManager:
         sensors_data = {}
         for sensor in self.sensors:
             data = sensor.read_data()
-            sensor_data[type(sensor).__name__] = data
+            sensors_data[type(sensor).__name__] = data
             self.notify_observers({type(sensor).__name__: data})
         return sensors_data
 
@@ -89,7 +110,10 @@ if __name__ == "__main__":
 
     # Добавление сенсоров
     altimeter = Altimeter()
+    gps_sensor = GPSSensor()
+
     sensor_manager.add_sensor(altimeter)
+    sensor_manager.add_sensor(gps_sensor)
 
     # Чтение данных сенсоров
     sensor_data = sensor_manager.read_sensors()
