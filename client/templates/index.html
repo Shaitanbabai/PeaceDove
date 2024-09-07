@@ -1,10 +1,52 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block title %}
+Wunderfliegende Supermaschine
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">Stream video</h2>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <video id="videoPlayer" class="embed-responsive embed-responsive-16by9" controls>
+                <!-- Вставляем сюда поток видео -->
+                <source src="{{ url_for('video_feed') }}" type="video/mp4">
+                Ваш браузер не поддерживает видео.
+            </video>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const videoPlayer = document.getElementById('videoPlayer');
+
+        videoPlayer.addEventListener('play', function() {
+            fetch('{{ url_for('start_video') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    console.error('Ошибка при запуске видео.');
+                }
+            });
+        });
+
+        videoPlayer.addEventListener('pause', function() {
+            fetch('{{ url_for('stop_video') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    console.error('Ошибка при остановке видео.');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

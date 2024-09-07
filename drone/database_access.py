@@ -1,6 +1,7 @@
 import asyncio
 import sqlite3
 
+
 class DatabaseAccess:
     def __init__(self, db_path):
         self.connection = sqlite3.connect(db_path)
