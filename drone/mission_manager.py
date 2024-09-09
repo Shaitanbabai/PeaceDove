@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 # Интерфейс стратегии полета, определяет метод execute
 class IFlightStrategy(ABC):
+
     @abstractmethod
     def execute(self, commands: list):
         """
@@ -40,6 +41,12 @@ class PatrolMissionStrategy(IFlightStrategy):
 
 # Контекст для управления стратегиями полета дрона
 class DroneContext:
+    """
+            Инициализирует контекст управления дронами с опциональной стратегией полета.
+
+            Args:
+                strategy (IFlightStrategy, optional): Начальная стратегия полета. По умолчанию None.
+            """
     def __init__(self, strategy: IFlightStrategy = None):
         self.__strategy = strategy  # Текущая стратегия полета
         self.__commands = []  # Список команд
@@ -68,12 +75,20 @@ class DroneContext:
 
 
 # Класс менеджера миссий
-# Класс менеджера миссий
 class MissionManager:
     def __init__(self):
+        """
+        Инициализирует менеджер миссий с пустым списком валидированных дронов.
+        """
         self.validated_drones = []
 
     def receive_validated_drones(self, valid_drones):
+        """
+          Принимает список валидированных дронов и инициирует симуляцию назначения миссий.
+
+          Args:
+              valid_drones (list): Список дронов, прошедших валидацию.
+          """
         if not valid_drones:
             logger.error("Список валидных дронов не передан. Убедитесь, что вы передаете список из drone_manager.py.")
             return
@@ -85,12 +100,23 @@ class MissionManager:
         self.simulate_mission_assignment()
 
     def simulate_mission_assignment(self):
-        # Симуляция присвоения миссий
+        """
+                Симулирует процесс назначения миссий каждому из валидированных дронов.
+                В дальнейшем с помощью ассоциируется через клиентский интерфейс со
+                списком миссия и базой полетных заданий в /drone/mission_manager.py
+                """
         for drone in self.validated_drones:
             drone_id = drone.get('drone_id')
             logger.info(f"Миссия успешно назначена дрону ID {drone_id}")
 
     def check_completeness(self, original_list, received_list):
+        """
+        Проверяет полноту передачи списка дронов по сравнению с оригинальным списком.
+
+        Args:
+            original_list (list): Оригинальный список дронов.
+            received_list (list): Полученный список дронов.
+        """
         original_ids = {drone['drone_id'] for drone in original_list}
         received_ids = {drone['drone_id'] for drone in received_list}
 
