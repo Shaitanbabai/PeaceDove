@@ -1,5 +1,11 @@
 from abc import ABC, abstractmethod
 import asyncio
+import pygame
+from pygame import math
+import math
+import queue
+import threading
+
 
 # Класс для управления дроном, включает методы для выполнения основных команд
 class DroneController:
@@ -61,6 +67,7 @@ class MoveForward(ICommand):
 # Команда для поворота дрона
 class Turn(ICommand):
     def __init__(self, drone: DroneController, degree: float):
+        self.__degree = None
         self.__drone = drone  # Хранит ссылку на объект DroneController
         self.__degree = degree  # Угол поворота
 
@@ -68,15 +75,54 @@ class Turn(ICommand):
         # Выполняет команду поворота на заданный угол
         await self.__drone.turn(self.__degree)
 
+class DroneSimulator:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((800, 600))
+        pygame.display.set_caption("Drone Simulator")
+        self.drone_rect = pygame.Rect(400, 500, 20, 10)
+        self.clock = pygame.time.Clock()
+        self.x, self.y = 400, 500  # Начальная позиция дрона
+        self.command_queue = queue.Queue()
+
+    def draw(self):
+        self.screen.fill((255, 255, 255))
+        pygame.draw.rect(self.screen, (0, 0, 255), self.drone_rect)
+        pygame.display.flip()
+        self.drone_rect.center = (self.x, self.y)
+
+    async def update(self, command: ICommand):
+        await command.execute()
+        if isinstance(command, MoveForward):
+            self.y -= command.__distance  # Движение вверх по оси Y (можно изменить)
+        elif isinstance(command, Turn):
+            # Поворот на угол degree
+            angle = math.radians(command.__degree)
+            self.x += math.cos(angle) * 10
+            self.y -= math.sin(angle) * 10  # Движение вверх по оси Y (можно изменить)
+        self.draw()
+
 # Пример использования
 async def main():
     drone = DroneController()
+    simulator = DroneSimulator()
     takeoff_command = Takeoff(drone)
     move_command = MoveForward(drone, 10)
     turn_command = Turn(drone, 90)
 
-    await takeoff_command.execute()
-    await move_command.execute()
-    await turn_command.execute()
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                return
 
+        await takeoff_command.execute()
+        await move_command.execute()
+        await turn_command.execute()
+
+        simulator.clock.tick(60)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
 # asyncio.run(main())  # Закомментировано для предотвращения автоматического запуска
